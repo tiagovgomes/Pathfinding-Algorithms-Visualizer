@@ -5,7 +5,7 @@ export function dijkstra(grid, startCell, finishCell) {
     while (!!unvisitedCells.length) {
         sortCellsByDistance(unvisitedCells);
         const closestCell = unvisitedCells.shift();
-        if (closestCell.isWall) continue;
+        if (closestCell.type === 'cell-wall') continue;
         if (closestCell.distance === Infinity) return visitedCellsInOrder;
         closestCell.isVisited = true;
         visitedCellsInOrder.push(closestCell);
@@ -46,8 +46,7 @@ function getAllCells(grid) {
     return cells;
 }
 
-// Backtracks from the finishCell to find the shortest path.
-// Only works when called *after* the dijkstra method above.
+
 export function getCellsInShortestPathOrder(finishCell) {
     const CellsInShortestPathOrder = [];
     let currentCell = finishCell;

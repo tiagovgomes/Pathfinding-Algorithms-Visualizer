@@ -10,25 +10,16 @@ export default class Cell extends React.Component {
     render() {
         const {
             col,
-            isFinish,
-            isStart,
-            isWall,
+            type,
             onMouseDown,
             onMouseEnter,
             onMouseUp,
             row,
         } = this.props;
-        const extraClassName = isFinish
-            ? 'cell-finish'
-            : isStart
-                ? 'cell-start'
-                : isWall
-                    ? 'cell-wall'
-                    : '';
         return (
             <div
                 id={`cell-${row}-${col}`}
-                className={`cell ${extraClassName}`}
+                className={`cell ${type}`}
                 onMouseDown={() => onMouseDown(row, col)}
                 onMouseEnter={() => onMouseEnter(row, col)}
                 onMouseUp={() => onMouseUp()}>
