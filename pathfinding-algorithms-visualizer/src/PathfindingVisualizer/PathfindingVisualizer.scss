@@ -1,7 +1,27 @@
 .path-visualizer-container {
     display: flex;
     flex-direction: column;
-    .hearder-options-container {}
+    align-items: center;
+
+    .hearder-options-container {
+        Button{
+            color: white;
+            text-transform: none;
+        }
+        .green-button{
+            background-color: #2DD881;
+        }
+        background-color: #140d4f;
+        padding: 10px;
+        width: calc(100% - 20px);
+        text-align: center;
+    }
 
     .grid-container {}
+}
+
+.arrow-icon {
+    height: 15px;
+    width: 15px;
+    margin-left: 5px;
 }

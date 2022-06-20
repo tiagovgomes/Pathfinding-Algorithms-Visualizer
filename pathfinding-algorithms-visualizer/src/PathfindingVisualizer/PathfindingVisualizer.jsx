@@ -1,15 +1,24 @@
 import React from "react";
 import './PathfindingVisualizer.scss';
 import Cell from './Cell/Cell';
-import { dijkstra, getCellsInShortestPathOrder } from '../Algorithms/dijkstra';
+import { dijkstra, getCellsInShortestPathOrder } from '../pathfindingAlgorithms/dijkstra';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import { depthFirstSearch } from '../mazeAlgorithms/depthFirstSearch';
+import arrowDown from '../styling/arrow-down.svg';
 
 
 const START_CELL = 'cell-start';
 const END_CELL = 'cell-finish';
 const WALL_CELL = 'cell-wall';
+
+const SLOW_SPEED = 5;
+const NORMAL_SPEED = 10;
+const FAST_SPEED = 15;
+
+const NUMB_ROWS = 20;
+const NUMB_COLS = 50;
 
 export default class PathfindingVisualizer extends React.Component {
 
@@ -20,12 +29,13 @@ export default class PathfindingVisualizer extends React.Component {
         this.state = {
             grid: [],
             mouseIsPressed: false,
-            cellTypeSelected: START_CELL
+            cellTypeSelected: START_CELL,
+            speed : NORMAL_SPEED
         };
     }
 
     componentDidMount() {
-        const grid = getInitialGrid();
+        const grid = this.getInitialGrid();
         this.setState({ grid });
     }
 
@@ -45,29 +55,39 @@ export default class PathfindingVisualizer extends React.Component {
     }
 
     animateDijkstra(visitedCellsInOrder, cellsInShortestPathOrder) {
+        let speed = this.state.speed;
+        console.log(speed);
         for (let i = 0; i <= visitedCellsInOrder.length; i++) {
             if (i === visitedCellsInOrder.length) {
                 setTimeout(() => {
                     this.animateShortestPath(cellsInShortestPathOrder);
-                }, 10 * i);
+                }, speed * i);
                 return;
             }
             setTimeout(() => {
                 const cell = visitedCellsInOrder[i];
                 document.getElementById(`cell-${cell.row}-${cell.col}`).className =
                     'cell cell-visited';
-            }, 10 * i);
+            }, speed * i);
         }
     }
 
     animateShortestPath(cellsInShortestPathOrder) {
+        let speed = this.state.speed;
         for (let i = 0; i < cellsInShortestPathOrder.length; i++) {
             setTimeout(() => {
                 const cell = cellsInShortestPathOrder[i];
                 document.getElementById(`cell-${cell.row}-${cell.col}`).className =
                     'cell cell-shortest-path';
-            }, 50 * i);
+            }, speed * 2 * i);
         }
+    }
+
+    test() {
+        let grid = this.state.grid;
+        const startCell = getCellByType(grid, START_CELL);
+        let test = depthFirstSearch(grid.slice(), startCell);
+        console.log(test);
     }
 
     visualizeDijkstra() {
@@ -80,8 +100,30 @@ export default class PathfindingVisualizer extends React.Component {
     }
 
     changeCellType(type) {
-        console.log(type);
         this.setState({ cellTypeSelected: type });
+    }
+
+    clearBoard() {
+        const grid = this.getInitialGrid();
+        this.setState({ grid });
+    }
+
+    getInitialGrid() {
+        const grid = [];
+        for (let row = 0; row < NUMB_ROWS; row++) {
+            const currentRow = [];
+            for (let col = 0; col < NUMB_COLS; col++) {
+                currentRow.push(createCell(col, row));
+                let cellElement = document.getElementById(`cell-${row}-${col}`)
+                if (cellElement) cellElement.className = 'cell';
+            }
+            grid.push(currentRow);
+        }
+        return grid;
+    };
+
+    changeSpeed(newSpeed){
+        this.setState({ speed: newSpeed });
     }
 
     render() {
@@ -89,22 +131,23 @@ export default class PathfindingVisualizer extends React.Component {
         return (
             <div className="path-visualizer-container">
                 <div className="hearder-options-container">
-                    <button onClick={() => this.visualizeDijkstra()}>
-                        Visualize Dijkstra's Algorithm
-                    </button>
-                    <button onClick={() => this.changeCellType(START_CELL)}>
-                        START
-                    </button>
-                    <button onClick={() => this.changeCellType(END_CELL)}>
-                        END
-                    </button>
-                    <button onClick={() => this.changeCellType(WALL_CELL)}>
-                        WALL
-                    </button>
-
                     <div Style="display:inline-block">
-                        <BasicMenu onClick={(e, type) => this.changeCellType(type)}></BasicMenu>
+                        <CellTypeMenu onClick={(e, type) => this.changeCellType(type)}></CellTypeMenu>
                     </div>
+                    <div Style="display:inline-block">
+                        <SpeedMenu onClick={(e, type) => this.changeSpeed(type)}></SpeedMenu>
+                    </div>
+                    <Button variant="contained" className="green-button" onClick={() => this.visualizeDijkstra()}>
+                        Visualize Dijkstra's
+                    </Button>
+                    <Button variant="text" onClick={() => this.clearBoard()}>
+                        Clear Board
+                    </Button>
+
+
+                </div>
+                <div className="header-helper-container">
+                    <img alt="arrowDown" src={arrowDown}></img>
                 </div>
                 <div className="grid-container">
                     {grid.map((row, rowIdx) => {
@@ -136,17 +179,7 @@ export default class PathfindingVisualizer extends React.Component {
 
 }
 
-const getInitialGrid = () => {
-    const grid = [];
-    for (let row = 0; row < 20; row++) {
-        const currentRow = [];
-        for (let col = 0; col < 30; col++) {
-            currentRow.push(createCell(col, row));
-        }
-        grid.push(currentRow);
-    }
-    return grid;
-};
+
 
 const createCell = (col, row) => {
     return {
@@ -178,7 +211,7 @@ const getCellByType = (grid, type) => {
     return null;
 }
 
-function BasicMenu(props) {
+function CellTypeMenu(props) {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
     const handleClick = (event) => {
@@ -201,6 +234,7 @@ function BasicMenu(props) {
                 onClick={(e) => { handleClick(e) }}
             >
                 Cell type
+                <img className="arrow-icon" alt="arrowDown" src={arrowDown}></img>
             </Button>
             <Menu
                 id="basic-menu"
@@ -211,9 +245,52 @@ function BasicMenu(props) {
                     'aria-labelledby': 'basic-button',
                 }}
             >
-                <MenuItem onClick={(e) => { handleClose(e, START_CELL) }}>START</MenuItem>
-                <MenuItem onClick={(e) => { handleClose(e, END_CELL) }}>GOAL</MenuItem>
-                <MenuItem onClick={(e) => { handleClose(e, WALL_CELL) }}>WALL</MenuItem>
+                <MenuItem onClick={(e) => { handleClose(e, START_CELL) }}>Start</MenuItem>
+                <MenuItem onClick={(e) => { handleClose(e, END_CELL) }}>Goal</MenuItem>
+                <MenuItem onClick={(e) => { handleClose(e, WALL_CELL) }}>Wall</MenuItem>
+            </Menu>
+        </div>
+    );
+}
+
+
+function SpeedMenu(props) {
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    const open = Boolean(anchorEl);
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+
+    };
+    const handleClose = (event, type) => {
+        props.onClick(event, type);
+        setAnchorEl(null);
+    };
+
+
+    return (
+        <div>
+            <Button
+                id="basic-button"
+                aria-controls={open ? 'basic-menu' : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? 'true' : undefined}
+                onClick={(e) => { handleClick(e) }}
+            >
+                Speed
+                <img className="arrow-icon" alt="arrowDown" src={arrowDown}></img>
+            </Button>
+            <Menu
+                id="basic-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                MenuListProps={{
+                    'aria-labelledby': 'basic-button',
+                }}
+            >
+                <MenuItem onClick={(e) => { handleClose(e, SLOW_SPEED) }}>Slow</MenuItem>
+                <MenuItem onClick={(e) => { handleClose(e, NORMAL_SPEED) }}>Normal</MenuItem>
+                <MenuItem onClick={(e) => { handleClose(e, FAST_SPEED) }}>Fast</MenuItem>
             </Menu>
         </div>
     );
