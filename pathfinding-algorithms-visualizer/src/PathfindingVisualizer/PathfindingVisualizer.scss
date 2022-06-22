@@ -4,17 +4,41 @@
     align-items: center;
 
     .hearder-options-container {
-        Button{
+        Button {
             color: white;
             text-transform: none;
         }
-        .green-button{
+
+        .green-button {
             background-color: #2DD881;
         }
+
         background-color: #140d4f;
         padding: 10px;
         width: calc(100% - 20px);
         text-align: center;
+    }
+
+    .header-helper-container {
+        display: flex;
+        padding: 15px;
+
+        .cell-help {
+            margin-left: 10px;
+
+            .wall-cell {
+                width: 25px;
+                height: 25px;
+                display: inline-block;
+                background-color: rgb(12, 53, 71);
+            }
+
+            .cell-help-description {
+                display: inline-block;
+                vertical-align: top;
+                margin-left: 5px;
+            }
+        }
     }
 
     .grid-container {}

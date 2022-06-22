@@ -7,10 +7,14 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { depthFirstSearch } from '../mazeAlgorithms/depthFirstSearch';
 import arrowDown from '../styling/arrow-down.svg';
+import startIcon from '../styling/start.svg';
+import targetIcon from '../styling/target.svg';
+
+
 
 
 const START_CELL = 'cell-start';
-const END_CELL = 'cell-finish';
+const TARGET_CELL = 'cell-target';
 const WALL_CELL = 'cell-wall';
 
 const SLOW_SPEED = 5;
@@ -30,7 +34,7 @@ export default class PathfindingVisualizer extends React.Component {
             grid: [],
             mouseIsPressed: false,
             cellTypeSelected: START_CELL,
-            speed : NORMAL_SPEED
+            speed: NORMAL_SPEED
         };
     }
 
@@ -93,7 +97,7 @@ export default class PathfindingVisualizer extends React.Component {
     visualizeDijkstra() {
         const { grid } = this.state;
         const startCell = getCellByType(this.state.grid, START_CELL);
-        const finishCell = getCellByType(this.state.grid, END_CELL);
+        const finishCell = getCellByType(this.state.grid, TARGET_CELL);
         const visitedCellsInOrder = dijkstra(grid, startCell, finishCell);
         const cellsInShortestPathOrder = getCellsInShortestPathOrder(finishCell);
         this.animateDijkstra(visitedCellsInOrder, cellsInShortestPathOrder);
@@ -122,7 +126,7 @@ export default class PathfindingVisualizer extends React.Component {
         return grid;
     };
 
-    changeSpeed(newSpeed){
+    changeSpeed(newSpeed) {
         this.setState({ speed: newSpeed });
     }
 
@@ -147,7 +151,25 @@ export default class PathfindingVisualizer extends React.Component {
 
                 </div>
                 <div className="header-helper-container">
-                    <img alt="arrowDown" src={arrowDown}></img>
+                    <div className="cell-help">
+                        <img alt="arrowDown" src={startIcon}></img>
+                        <div className="cell-help-description">
+                            Start Cell
+                        </div>
+                    </div>
+                    <div className="cell-help">
+                        <img alt="arrowDown" src={targetIcon}></img>
+                        <div className="cell-help-description">
+                            Target Cell
+                        </div>
+                    </div>
+                    <div className="cell-help">
+                        <div className="wall-cell"></div>
+                        <div className="cell-help-description">
+                            Wall Cell
+                        </div>
+                    </div>
+
                 </div>
                 <div className="grid-container">
                     {grid.map((row, rowIdx) => {
@@ -246,7 +268,7 @@ function CellTypeMenu(props) {
                 }}
             >
                 <MenuItem onClick={(e) => { handleClose(e, START_CELL) }}>Start</MenuItem>
-                <MenuItem onClick={(e) => { handleClose(e, END_CELL) }}>Goal</MenuItem>
+                <MenuItem onClick={(e) => { handleClose(e, TARGET_CELL) }}>Goal</MenuItem>
                 <MenuItem onClick={(e) => { handleClose(e, WALL_CELL) }}>Wall</MenuItem>
             </Menu>
         </div>
