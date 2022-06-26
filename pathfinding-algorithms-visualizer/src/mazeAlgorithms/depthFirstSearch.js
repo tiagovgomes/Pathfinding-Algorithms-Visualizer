@@ -57,39 +57,3 @@ function getCellNeighbour(grid, currentCell, direction) {
     }
     return null;
 }
-
-
-/* Maze DFS(int width, int height, Cell startCell)
-{
-  Maze maze(width, height);
-  Stack pathStack(startCell);
-
-    // While there is node to be handled in the stack
-    while (!pathStack.empty()) {
-    // Handle the cell at the top of the stack:
-    // Get available neighbors from bottom, left, right, top and unvisited
-    Cell cell = pathStack.pop();
-    auto neighbors = GetAvailableneighbors(maze, cell);
-
-        // If there is available node to process (loop to backtrack - 'pop' otherwise)
-        if (!neighbors.empty()) {
-      // Randomly select a node to be processed
-      auto randIdx = Random() % neighbors.size();
-
-            // For each available node: connect to the cell, mark it as visited
-            // and push it into the stack.
-            for (auto i = 0; i < neighbors.size(); ++i)
-            {
-                cell -> Connect(Cell:: Visite(neighbors[i]));
-
-                // Only the chosen item should be add to the top following a DFS strategy
-                if (i != randIdx) pathStack.push(neighbors[i]);
-            }
-
-            // Add the chosen node as the next one to be processed
-            pathStack.push(neighbors[randIdx]);
-        }
-    }
-
-    return maze;
-}  */

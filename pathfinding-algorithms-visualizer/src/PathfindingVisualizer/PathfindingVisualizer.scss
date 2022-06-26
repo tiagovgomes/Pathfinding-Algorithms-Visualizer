@@ -26,11 +26,22 @@
         .cell-help {
             margin-left: 10px;
 
-            .wall-cell {
+            .icon-cell {
                 width: 25px;
                 height: 25px;
                 display: inline-block;
+            }
+
+            .wall-cell {
                 background-color: rgb(12, 53, 71);
+            }
+
+            .shortest-path-cell {
+                background-color: rgb(255, 254, 106);
+            }
+
+            .visited-cell {
+                background-color: rgba(0, 190, 218, 0.75);
             }
 
             .cell-help-description {

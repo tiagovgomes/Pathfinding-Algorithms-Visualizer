@@ -5,10 +5,10 @@ import { dijkstra, getCellsInShortestPathOrder } from '../pathfindingAlgorithms/
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { depthFirstSearch } from '../mazeAlgorithms/depthFirstSearch';
 import arrowDown from '../styling/arrow-down.svg';
 import startIcon from '../styling/start.svg';
 import targetIcon from '../styling/target.svg';
+import { recursiveDivisionMaze } from '../mazeAlgorithms/recursiveDivision';
 
 
 
@@ -60,7 +60,6 @@ export default class PathfindingVisualizer extends React.Component {
 
     animateDijkstra(visitedCellsInOrder, cellsInShortestPathOrder) {
         let speed = this.state.speed;
-        console.log(speed);
         for (let i = 0; i <= visitedCellsInOrder.length; i++) {
             if (i === visitedCellsInOrder.length) {
                 setTimeout(() => {
@@ -76,6 +75,17 @@ export default class PathfindingVisualizer extends React.Component {
         }
     }
 
+    animateMazeCells(cellsToAnimate) {
+        let speed = this.state.speed;
+        for (let i = 0; i <= cellsToAnimate.length; i++) {
+            setTimeout(() => {
+                const cell = cellsToAnimate[i];
+                document.getElementById(`cell-${cell.row}-${cell.col}`).className =
+                    'cell cell-wall';
+            }, speed * i);
+        }
+    }
+
     animateShortestPath(cellsInShortestPathOrder) {
         let speed = this.state.speed;
         for (let i = 0; i < cellsInShortestPathOrder.length; i++) {
@@ -85,13 +95,6 @@ export default class PathfindingVisualizer extends React.Component {
                     'cell cell-shortest-path';
             }, speed * 2 * i);
         }
-    }
-
-    test() {
-        let grid = this.state.grid;
-        const startCell = getCellByType(grid, START_CELL);
-        let test = depthFirstSearch(grid.slice(), startCell);
-        console.log(test);
     }
 
     visualizeDijkstra() {
@@ -130,6 +133,12 @@ export default class PathfindingVisualizer extends React.Component {
         this.setState({ speed: newSpeed });
     }
 
+    recursiveDivisionMazeGenerator() {
+        let cellsToAnimate = [];
+        recursiveDivisionMaze(this.state.grid, 0, NUMB_ROWS, 0, NUMB_COLS, "horizontal", true, "wall", cellsToAnimate);
+        this.animateMazeCells(cellsToAnimate);
+    }
+
     render() {
         const { grid, mouseIsPressed } = this.state;
         return (
@@ -146,6 +155,9 @@ export default class PathfindingVisualizer extends React.Component {
                     </Button>
                     <Button variant="text" onClick={() => this.clearBoard()}>
                         Clear Board
+                    </Button>
+                    <Button variant="text" onClick={() => this.recursiveDivisionMazeGenerator()}>
+                        Create Maze
                     </Button>
 
 
@@ -164,9 +176,21 @@ export default class PathfindingVisualizer extends React.Component {
                         </div>
                     </div>
                     <div className="cell-help">
-                        <div className="wall-cell"></div>
+                        <div className="icon-cell wall-cell"></div>
                         <div className="cell-help-description">
                             Wall Cell
+                        </div>
+                    </div>
+                    <div className="cell-help">
+                        <div className="icon-cell visited-cell"></div>
+                        <div className="cell-help-description">
+                            Visited Cell
+                        </div>
+                    </div>
+                    <div className="cell-help">
+                        <div className="icon-cell shortest-path-cell"></div>
+                        <div className="cell-help-description">
+                            Shortest Path Cell
                         </div>
                     </div>
 
