@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import './PathfindingVisualizer.scss';
 import Cell from './Cell/Cell';
 import { dijkstra, getCellsInShortestPathOrder } from '../pathfindingAlgorithms/dijkstra';
@@ -24,46 +24,41 @@ const FAST_SPEED = 15;
 const NUMB_ROWS = 20;
 const NUMB_COLS = 50;
 
-export default class PathfindingVisualizer extends React.Component {
+export default function PathfindingVisualizer() {
+
+    const [grid, setGrid] = useState([]);
+    const [mouseIsPressed, setMouseIsPressed] = useState(false);
+    const [cellTypeSelected, setCellTypeSelected] = useState(START_CELL);
+    const [speed, setspeed] = useState(NORMAL_SPEED);
 
 
+    useEffect(() => {
+        const initialGrid = getInitialGrid();
+        setGrid(initialGrid);
+    }, [])
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            grid: [],
-            mouseIsPressed: false,
-            cellTypeSelected: START_CELL,
-            speed: NORMAL_SPEED
-        };
+
+    function handleMouseDown(row, col) {
+        const newGrid = getNewGridWithWallToggled(grid, row, col, cellTypeSelected);
+        setGrid(newGrid);
+        setMouseIsPressed(true);
     }
 
-    componentDidMount() {
-        const grid = this.getInitialGrid();
-        this.setState({ grid });
+    function handleMouseEnter(row, col) {
+        if (!mouseIsPressed) return;
+        const newGrid = getNewGridWithWallToggled(grid, row, col, cellTypeSelected);
+        setGrid(newGrid);
     }
 
-    handleMouseDown(row, col) {
-        const newGrid = getNewGridWithWallToggled(this.state.grid, row, col, this.state.cellTypeSelected);
-        this.setState({ grid: newGrid, mouseIsPressed: true });
+    function handleMouseUp() {
+        setMouseIsPressed(false);
     }
 
-    handleMouseEnter(row, col) {
-        if (!this.state.mouseIsPressed) return;
-        const newGrid = getNewGridWithWallToggled(this.state.grid, row, col, this.state.cellTypeSelected);
-        this.setState({ grid: newGrid });
-    }
-
-    handleMouseUp() {
-        this.setState({ mouseIsPressed: false });
-    }
-
-    animateDijkstra(visitedCellsInOrder, cellsInShortestPathOrder) {
-        let speed = this.state.speed;
+    function animateDijkstra(visitedCellsInOrder, cellsInShortestPathOrder) {
         for (let i = 0; i <= visitedCellsInOrder.length; i++) {
             if (i === visitedCellsInOrder.length) {
                 setTimeout(() => {
-                    this.animateShortestPath(cellsInShortestPathOrder);
+                    animateShortestPath(cellsInShortestPathOrder);
                 }, speed * i);
                 return;
             }
@@ -75,8 +70,7 @@ export default class PathfindingVisualizer extends React.Component {
         }
     }
 
-    animateMazeCells(cellsToAnimate) {
-        let speed = this.state.speed;
+    function animateMazeCells(cellsToAnimate) {
         for (let i = 0; i <= cellsToAnimate.length; i++) {
             setTimeout(() => {
                 const cell = cellsToAnimate[i];
@@ -86,8 +80,7 @@ export default class PathfindingVisualizer extends React.Component {
         }
     }
 
-    animateShortestPath(cellsInShortestPathOrder) {
-        let speed = this.state.speed;
+    function animateShortestPath(cellsInShortestPathOrder) {
         for (let i = 0; i < cellsInShortestPathOrder.length; i++) {
             setTimeout(() => {
                 const cell = cellsInShortestPathOrder[i];
@@ -97,25 +90,25 @@ export default class PathfindingVisualizer extends React.Component {
         }
     }
 
-    visualizeDijkstra() {
-        const { grid } = this.state;
-        const startCell = getCellByType(this.state.grid, START_CELL);
-        const finishCell = getCellByType(this.state.grid, TARGET_CELL);
-        const visitedCellsInOrder = dijkstra(grid, startCell, finishCell);
+    function visualizeDijkstra() {
+        const pastGrid = grid;
+        const startCell = getCellByType(grid, START_CELL);
+        const finishCell = getCellByType(grid, TARGET_CELL);
+        const visitedCellsInOrder = dijkstra(pastGrid, startCell, finishCell);
         const cellsInShortestPathOrder = getCellsInShortestPathOrder(finishCell);
-        this.animateDijkstra(visitedCellsInOrder, cellsInShortestPathOrder);
+        animateDijkstra(visitedCellsInOrder, cellsInShortestPathOrder);
     }
 
-    changeCellType(type) {
-        this.setState({ cellTypeSelected: type });
+    function changeCellType(type) {
+        setCellTypeSelected(type);
     }
 
-    clearBoard() {
-        const grid = this.getInitialGrid();
-        this.setState({ grid });
+    function clearBoard() {
+        const newGrid = getInitialGrid();
+        setGrid(newGrid);
     }
 
-    getInitialGrid() {
+    function getInitialGrid() {
         const grid = [];
         for (let row = 0; row < NUMB_ROWS; row++) {
             const currentRow = [];
@@ -129,99 +122,95 @@ export default class PathfindingVisualizer extends React.Component {
         return grid;
     };
 
-    changeSpeed(newSpeed) {
-        this.setState({ speed: newSpeed });
+    function changeSpeed(newSpeed) {
+        setspeed(newSpeed);
     }
 
-    recursiveDivisionMazeGenerator() {
+    function recursiveDivisionMazeGenerator() {
         let cellsToAnimate = [];
-        recursiveDivisionMaze(this.state.grid, 0, NUMB_ROWS, 0, NUMB_COLS, "horizontal", true, "wall", cellsToAnimate);
-        this.animateMazeCells(cellsToAnimate);
+        recursiveDivisionMaze(grid, 0, NUMB_ROWS, 0, NUMB_COLS, "horizontal", true, "wall", cellsToAnimate);
+        animateMazeCells(cellsToAnimate);
     }
 
-    render() {
-        const { grid, mouseIsPressed } = this.state;
-        return (
-            <div className="path-visualizer-container">
-                <div className="hearder-options-container">
-                    <div Style="display:inline-block">
-                        <CellTypeMenu onClick={(e, type) => this.changeCellType(type)}></CellTypeMenu>
-                    </div>
-                    <div Style="display:inline-block">
-                        <SpeedMenu onClick={(e, type) => this.changeSpeed(type)}></SpeedMenu>
-                    </div>
-                    <Button variant="contained" className="green-button" onClick={() => this.visualizeDijkstra()}>
-                        Visualize Dijkstra's
-                    </Button>
-                    <Button variant="text" onClick={() => this.clearBoard()}>
-                        Clear Board
-                    </Button>
-                    <Button variant="text" onClick={() => this.recursiveDivisionMazeGenerator()}>
-                        Create Maze
-                    </Button>
+    return (
+        <div className="path-visualizer-container">
+            <div className="hearder-options-container">
+                <div Style="display:inline-block">
+                    <CellTypeMenu onClick={(e, type) => changeCellType(type)}></CellTypeMenu>
+                </div>
+                <div Style="display:inline-block">
+                    <SpeedMenu onClick={(e, type) => changeSpeed(type)}></SpeedMenu>
+                </div>
+                <Button variant="contained" className="green-button" onClick={() => visualizeDijkstra()}>
+                    Visualize Dijkstra's
+                </Button>
+                <Button variant="text" onClick={() => clearBoard()}>
+                    Clear Board
+                </Button>
+                <Button variant="text" onClick={() => recursiveDivisionMazeGenerator()}>
+                    Create Maze
+                </Button>
 
 
-                </div>
-                <div className="header-helper-container">
-                    <div className="cell-help">
-                        <img alt="arrowDown" src={startIcon}></img>
-                        <div className="cell-help-description">
-                            Start Cell
-                        </div>
-                    </div>
-                    <div className="cell-help">
-                        <img alt="arrowDown" src={targetIcon}></img>
-                        <div className="cell-help-description">
-                            Target Cell
-                        </div>
-                    </div>
-                    <div className="cell-help">
-                        <div className="icon-cell wall-cell"></div>
-                        <div className="cell-help-description">
-                            Wall Cell
-                        </div>
-                    </div>
-                    <div className="cell-help">
-                        <div className="icon-cell visited-cell"></div>
-                        <div className="cell-help-description">
-                            Visited Cell
-                        </div>
-                    </div>
-                    <div className="cell-help">
-                        <div className="icon-cell shortest-path-cell"></div>
-                        <div className="cell-help-description">
-                            Shortest Path Cell
-                        </div>
-                    </div>
-
-                </div>
-                <div className="grid-container">
-                    {grid.map((row, rowIdx) => {
-                        return (
-                            <div className="row">
-                                {row.map((cell, cellIdx) => {
-                                    const { row, col, type } = cell;
-                                    return (
-                                        <Cell
-                                            key={rowIdx + cellIdx}
-                                            col={col}
-                                            type={type}
-                                            mouseIsPressed={mouseIsPressed}
-                                            onMouseDown={(row, col) => this.handleMouseDown(row, col)}
-                                            onMouseEnter={(row, col) => this.handleMouseEnter(row, col)}
-                                            onMouseUp={() => this.handleMouseUp()}
-                                            row={row}>
-                                        </Cell>
-                                    );
-                                }
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
             </div>
-        )
-    }
+            <div className="header-helper-container">
+                <div className="cell-help">
+                    <img alt="arrowDown" src={startIcon}></img>
+                    <div className="cell-help-description">
+                        Start Cell
+                    </div>
+                </div>
+                <div className="cell-help">
+                    <img alt="arrowDown" src={targetIcon}></img>
+                    <div className="cell-help-description">
+                        Target Cell
+                    </div>
+                </div>
+                <div className="cell-help">
+                    <div className="icon-cell wall-cell"></div>
+                    <div className="cell-help-description">
+                        Wall Cell
+                    </div>
+                </div>
+                <div className="cell-help">
+                    <div className="icon-cell visited-cell"></div>
+                    <div className="cell-help-description">
+                        Visited Cell
+                    </div>
+                </div>
+                <div className="cell-help">
+                    <div className="icon-cell shortest-path-cell"></div>
+                    <div className="cell-help-description">
+                        Shortest Path Cell
+                    </div>
+                </div>
+
+            </div>
+            <div className="grid-container">
+                {grid.map((row, rowIdx) => {
+                    return (
+                        <div className="row">
+                            {row.map((cell, cellIdx) => {
+                                const { row, col, type } = cell;
+                                return (
+                                    <Cell
+                                        key={rowIdx + cellIdx}
+                                        col={col}
+                                        type={type}
+                                        mouseIsPressed={mouseIsPressed}
+                                        onMouseDown={(row, col) => handleMouseDown(row, col)}
+                                        onMouseEnter={(row, col) => handleMouseEnter(row, col)}
+                                        onMouseUp={() => handleMouseUp()}
+                                        row={row} />
+                                );
+                            }
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    )
 
 }
 
